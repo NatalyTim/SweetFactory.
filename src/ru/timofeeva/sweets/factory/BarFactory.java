@@ -5,10 +5,9 @@ import ru.timofeeva.sweets.chocolate.*;
 
 import java.util.Random;
 
-public class BarFactory implements SweetFactory {
+public class BarFactory {
 
-    @Override
-    public Sweet create() {
+    public static Sweet create() {
         Random random = new Random();
         int i = random.nextInt(3);
         switch (i) {
