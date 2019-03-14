@@ -1,5 +1,6 @@
 package ru.timofeeva.calculator;
 
+@FunctionalInterface
 public interface CostCalculator {
-        double costCalculator(double c);
+        double calculate(double c);
 }

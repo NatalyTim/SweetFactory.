@@ -11,8 +11,13 @@ import ru.timofeeva.sweets.Sweet;
 public class Marmalade extends Sweet {
     private MarmaladeTaste taste;
 
+    public Marmalade(double weight,MarmaladeTaste taste) {
+        super(65, weight, "Marmalade");
+        this.taste = taste;
+    }
 
-     public Marmalade( MarmaladeTaste taste) {
+
+         public Marmalade( MarmaladeTaste taste) {
         super(65, 100, "Marmalade");
         this.taste = taste;
     }

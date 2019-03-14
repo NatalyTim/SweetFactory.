@@ -1,5 +1,6 @@
 package ru.timofeeva.box;
 
+import ru.timofeeva.calculator.CostCalculator;
 import ru.timofeeva.comparators.SweetComparatorByPrice;
 import ru.timofeeva.comparators.SweetComparatorByWeight;
 import ru.timofeeva.sweets.Sweet;
@@ -7,10 +8,11 @@ import ru.timofeeva.sweets.factory.SweetFactory;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * @author Timofeeva Natalia
- * @see #add(SweetFactory) (Sweet)
+ * @see #add(Sweet)
  * @see #getBoxPrice()
  * @see #getBoxWeight()
  * @see #optimizePrice(double)
@@ -30,8 +32,9 @@ public class PresentBox implements Box {
 
     private void applyToList() {
         for (int i = 0; i < sweets.size(); i++) {
-            if (policy.test(sweets.get(i))) {
-                sweets.remove(i);
+            if (!policy.test(sweets.get(i))) {
+                Sweet sweet = sweets.remove(i);
+                System.out.println("The sweet " + sweet + " was removed");
             }
         }
     }
@@ -40,17 +43,6 @@ public class PresentBox implements Box {
         return sweets;
     }
 
-    /*
-     * Создаем метод для заполнения массива.
-     */
-    @Override
-    public void add(SweetFactory sweetFactory) {
-        if (sweetFactory == null) {
-            System.out.println("You can not insert null value");
-            return;
-        }
-        add(sweetFactory.create());
-    }
 
     @Override
     public void add(Sweet sweet) {
@@ -61,7 +53,8 @@ public class PresentBox implements Box {
         if (policy.test(sweet)) {
             sweets.add(sweet);
         } else {
-            System.out.println("This sweet has high price");
+            System.out.println("The sweet " + sweet.toString() +" is not added because of policy");
+
         }
 
     }
@@ -74,7 +67,17 @@ public class PresentBox implements Box {
         if (isEmpty()) {
             System.out.println("Present box is empty!");
         }
+        System.out.println("**********The itemms in the box****************");
         sweets.forEach(System.out::println);
+    }
+
+    @Override
+    public void printBox(CostCalculator costCalculator) {
+        if (isEmpty()) {
+            System.out.println("Present box is empty!");
+        }
+        System.out.println("**********The itemms in the box****************");
+        sweets.forEach(s -> System.out.println(s.toString(costCalculator)));
     }
 
     /*
@@ -82,13 +85,7 @@ public class PresentBox implements Box {
      */
     @Override
     public double getBoxWeight() {
-        double boxWeight = 0;
-        for (int i = 0; i < sweets.size(); i++) {
-            if (sweets.get(i) != null) {
-                boxWeight += sweets.get(i).getWeight();
-            }
-        }
-        return boxWeight;
+        return sweets.stream().map(s -> s.getWeight()).reduce((sum, s) -> {return sum += s;}).get();
     }
 
     /*
@@ -97,14 +94,25 @@ public class PresentBox implements Box {
     @Override
     public double getBoxPrice() {
         double boxPrice = 0;
+        return sweets.stream().map(s -> s.getPrice()).reduce((sum, s) -> {return sum += s;}).get();
+//        for (int i = 0; i < sweets.size(); i++) {
+//            if (sweets.get(i) != null) {
+//                boxPrice += sweets.get(i).getPrice();
+//            }
+//        }
+//        return boxPrice;
+    }
+
+    @Override
+    public double getBoxPrice(CostCalculator costCalculator) {
+        double boxPrice = 0;
         for (int i = 0; i < sweets.size(); i++) {
             if (sweets.get(i) != null) {
-                boxPrice += sweets.get(i).getPrice();
+                boxPrice += sweets.get(i).getPrice(costCalculator);
             }
         }
         return boxPrice;
     }
-
     /*
      *Создаем метод для оптимизции массива по весу.
      */
@@ -120,7 +128,10 @@ public class PresentBox implements Box {
         }
         double difference = getBoxWeight() - maxWeight;
         if (difference > 0) {
-            sweets.stream().sorted(new SweetComparatorByWeight());
+            sweets = sweets
+                    .stream()
+                    .sorted(new SweetComparatorByWeight())
+                    .collect(Collectors.toList());
 
             for (int i = sweets.size() - 1; difference > 0; i--) {
                 if (sweets.get(i) != null) {
@@ -149,7 +160,10 @@ public class PresentBox implements Box {
         }
         double difference = getBoxPrice() - maxPrice;
         if (difference > 0) {
-            sweets.stream().sorted(new SweetComparatorByPrice());
+            sweets = sweets
+                    .stream()
+                    .sorted(new SweetComparatorByPrice())
+                    .collect(Collectors.toList());
 
             for (int i = sweets.size() - 1; difference > 0; i--) {
                 if (sweets.get(i) != null) {

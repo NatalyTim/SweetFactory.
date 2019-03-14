@@ -3,7 +3,10 @@ package ru.timofeeva;
 import ru.timofeeva.box.Box;
 import ru.timofeeva.box.PresentBox;
 import ru.timofeeva.calculator.*;
+import ru.timofeeva.policies.ChokolatePolicy;
+import ru.timofeeva.policies.MarmeladePolicy;
 import ru.timofeeva.sweets.*;
+import ru.timofeeva.sweets.chocolate.BlackChocolate;
 import ru.timofeeva.sweets.factory.BarFactory;
 import ru.timofeeva.sweets.factory.ChocolateFactory;
 import ru.timofeeva.sweets.factory.SweetGenerator;
@@ -69,25 +72,56 @@ public class Main {
         box.setPolicy((Sweet s) -> {
             return s.getPrice() < 100;
         });
+        box.add(new BlackChocolate(150, "Alpen Gold"));
+        box.add(new BlackChocolate(70, "Alpen Gold"));
         box.printBox();
+
         System.out.println("по весу");
         box.setPolicy((Sweet s) -> {
             return s.getWeight() < 200;
         });
-
-
+        box.add(new Marmalade(210,MarmaladeTaste.PEAR));
+        box.add(new Marmalade(95, MarmaladeTaste.CHERRY));
         box.printBox();
+
+        box.setPolicy(new ChokolatePolicy());
+
+        box.add(new Marmalade(210,MarmaladeTaste.PEAR));
+        box.add(new BlackChocolate(70, "Alpen Gold"));
+        box.printBox();
+
+        box.setPolicy(MarmeladePolicy::checkIfMarmelade);
+        box.add(new Marmalade(210,MarmaladeTaste.PEAR));
+        box.add(new BlackChocolate(70, "Alpen Gold"));
+        box.printBox();
+
         System.out.println("***************Task№3*****************");
         System.out.println("Стоимость подарка в долларах");
         Dollar dollar = new Dollar();
-        System.out.println(String.format("Result = " + "%.2f", dollar.costCalculator(box.getBoxPrice())));
+        System.out.println(String.format("Result = " + "%.2f", box.getBoxPrice(dollar)));
+
+        System.out.println("Стоимость подарка в фунтах");
+        System.out.println(String.format("Result = " + "%.2f", box.getBoxPrice(Pounds::calculate)));
+
         System.out.println("Стоимость подарка в евро");
-        Euro euro = new Euro();
-        System.out.println(String.format("Result = " + "%.2f", euro.costCalculator(box.getBoxPrice())));
+        System.out.println(String.format("Result = " + "%.2f", box.getBoxPrice(
+                (double c) -> {
+                    return c/75.;
+                })
+        ));
 
-        box.getBoxPrice();
-        box.printBox();
+        System.out.println("Стоимость подарка в евроцентах");
+        System.out.println(String.format("Result = " + "%.2f", box.getBoxPrice(
+                (double c) -> {
+                    return c/75. * 100.;
+                })
+        ));
 
+        System.out.println("*****************Streams*****************");
+        System.out.println("Общий вес: " + box.getBoxWeight());
+        System.out.println("Общая стоимоть:" + box.getBoxPrice());
+        box.optimizePrice(100);
+        box.optimizeWeight(500);
 
     }
 }
